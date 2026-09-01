@@ -3,7 +3,11 @@ const apiError = require("../utils/apiError");
 
 const authMiddleware = (req, res, next) => {
   try {
-    const token = req.cookies?.accessTokens;
+    let token = req.cookies?.accessTokens;
+
+    if (!token && req.headers.authorization && req.headers.authorization.startsWith("Bearer ")) {
+      token = req.headers.authorization.split(" ")[1];
+    }
 
     if (!token) {
       throw apiError(401, "Unauthorized! Token not found");

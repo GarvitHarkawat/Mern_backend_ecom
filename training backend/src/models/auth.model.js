@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const{ROLE_LIST} = require("../constants/role");
+const{ROLE_LIST} = require("../constants/roles");
 const addressSchema = new mongoose.Schema(
   {
     label: {

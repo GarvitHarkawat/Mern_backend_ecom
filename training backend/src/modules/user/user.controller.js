@@ -1,5 +1,5 @@
 const asyncHandler = require("../../utils/asyncHandler");
-const userService = require("./user.service ");
+const userService = require("./user.service");
 const apiResponse = require("../../utils/apiResponse");
 
 //=============user controller=============

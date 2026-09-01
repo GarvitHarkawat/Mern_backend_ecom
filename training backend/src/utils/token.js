@@ -34,22 +34,21 @@ const verifyRefreshToken = (token) => {
   return jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
 };
 
-const refreshCookieOptions = () => ({
+const refreshCookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
   sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-  path: "/api/v1/auth",
-  maxAge: 15* 60 * 60 * 1000,
-});
+  path: "/",
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+};
 
-
-const accessCookieOptions = () => ({
+const accessCookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
   sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-  path: "/api/v1/auth",
-  maxAge: 15 * 60 * 60 * 1000,
-});
+  path: "/",
+  maxAge: 15 * 60 * 1000,
+};
 
 module.exports = {
   signAccessToken,

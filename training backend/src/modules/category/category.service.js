@@ -3,7 +3,7 @@ const apiError = require("../../utils/apiError");
 const {
   uploadToCloudinary,
   destroyFromCloudinary,
-} = require("../../utils/upploadToCloudinary");
+} = require("../../utils/uploadToCloudinary");
 const convertToSlug = require("../../utils/slug");
 
 //get all category service==============
