@@ -1,65 +1,105 @@
 const asyncHandler = require("../../utils/asyncHandler");
-const ApiResponse = require("../../utils/apiResponse");
-const ApiError = require("../../utils/apiError");
-const User = require("../../models/user.model");
+const userService = require("./user.service ");
+const apiResponse = require("../../utils/apiResponse");
 
-// GET /users/me
-exports.getMe = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user.id);
-  if (!user) throw new ApiError(404, "User not found");
-  res.status(200).json(ApiResponse(200, user, "Own profile"));
+//=============user controller=============
+// get own profile
+const getOwnProfileController = asyncHandler(async (req, res) => {
+  const user = await userService.getOwnProfileService(req.user.sub);
+
+  res.status(200).json(apiResponse(200, user, "User fetched successfully!"));
 });
 
-// PATCH /users/me
-exports.updateMe = asyncHandler(async (req, res) => {
-  const updates = { name: req.body.name, phone: req.body.phone, avatar: req.body.avatar };
-  const user = await User.findByIdAndUpdate(req.user.id, updates, { new: true });
-  res.status(200).json(ApiResponse(200, user, "Profile updated"));
+//update own profile
+const updateOwnProfileController = asyncHandler(async (req, res) => {
+  const data = req.body;
+
+  const image = req.file;
+  const id = req.user.sub;
+
+  let allowed = ["name", "phone", "profilePhoto"];
+
+   if(req.user.role === "seller"){
+    allowed.push("shopName");
+  };
+const invalidFields = Object.keys(data).filter(
+  (key) => !allowed.includes(key)
+);
+
+if (invalidFields.length > 0) {
+  return res.status(401).json(
+    apiResponse(401, null, "you are unauthorized to update other fields")
+  );
+}
+ 
+
+  const reesult = await userService.updateProfileService(id , data, image);
+
+  res
+    .status(200)
+    .json(apiResponse(200, reesult, "profile updated successfully"));
 });
 
-// GET /users/me/addresses
-exports.getAddresses = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user.id).select("address");
-  res.status(200).json(ApiResponse(200, user.address, "Addresses list"));
+//get all address
+const getAllAddressesController = asyncHandler(async (req, res) => {
+    const adresses = await userService.getAllAddressesService(req.user.sub);
+  res.status(200).json(apiResponse(200, adresses,"fetch all adresses!"));
 });
 
-// PATCH /users/me/addresses/default
-exports.setDefaultAddress = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user.id);
-  user.address.forEach(addr => addr.isDefault = false);
-  const addr = user.address.id(req.body.id);
-  if (!addr) throw new ApiError(404, "Address not found");
-  addr.isDefault = true;
-  await user.save();
-  res.status(200).json(ApiResponse(200, user.address, "Default address set"));
+//create addresses
+const createAddressesController = asyncHandler(async (req, res) => {
+    const data = req.body;
+    const user = await userService.createAddressesService(req.user.sub,data);
+  res.status(201).json(apiResponse(201,"address created!"));
 });
 
-// DELETE /users/me/addresses/:id
-exports.deleteAddress = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user.id);
-  user.address.id(req.params.id).remove();
-  await user.save();
-  res.status(200).json(ApiResponse(200, null, "Address deleted"));
+//update address
+const updateAddressesController = asyncHandler(async (req, res) => {
+  const userID = req.user.sub;
+  const addressID = req.params.addrId;
+
+  const updatedAddress = await userService.updateAddressService(
+    userID,
+    addressID,
+    req.body
+  );
+
+  res
+    .status(200)
+    .json(apiResponse(200, updatedAddress, "Address updated successfully!!!"));
 });
 
-// GET /users (admin)
-exports.getAllUsers = asyncHandler(async (req, res) => {
-  const users = await User.find();
-  res.status(200).json(ApiResponse(200, users, "All users fetched"));
+const deleteAddressesController = asyncHandler(async (req, res) => {
+  const userID = req.user.sub;
+  const addressID = req.params.addrId;
+  const patch = req.body;
+  await userService.deleteAddressService(userID, addressID, patch);
+  res.status(200).json(apiResponse(200,"address deleted successfully!!!"));
 });
 
-// PATCH /users/:id (admin block/unblock)
-exports.toggleActive = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.params.id);
-  if (!user) throw new ApiError(404, "User not found");
-  user.isActive = !user.isActive;
-  await user.save();
-  res.status(200).json(ApiResponse(200, user, "User status updated"));
+//===============admin controller==================
+
+const updateUserStatusController = asyncHandler(async (req, res) => {
+  res.status().json(apiResponse());
 });
 
-// DELETE /users/:id (admin delete)
-exports.deleteUser = asyncHandler(async (req, res) => {
-  const user = await User.findByIdAndDelete(req.params.id);
-  if (!user) throw new ApiError(404, "User not found");
-  res.status(200).json(ApiResponse(200, null, "User deleted"));
+const deleteUserController = asyncHandler(async (req, res) => {
+  res.status().json(apiResponse());
 });
+
+const getAllUserController = asyncHandler(async (req, res) => {
+  res.status().json(apiResponse());
+});
+
+module.exports = {
+  getOwnProfileController,
+ 
+  updateOwnProfileController,
+  getAllAddressesController,
+  createAddressesController,
+  updateAddressesController,
+  deleteAddressesController,
+  updateUserStatusController,
+  deleteUserController,
+  getAllUserController,
+};

@@ -1,28 +1,72 @@
+const express = require("express");
 
-const express = require('express');
-const { getMe, updateMe, getAddresses, setDefaultAddress, deleteAddress, getAllUsers, toggleActive, deleteUser } = require('./user.controller');
-const { protect, authorize } = require('../../middlewares/auth.middleware');
+const userRouter = express.Router();
 
-const router = express.Router();
+const userController = require("./user.controller");
+const authMiddleware = require("../../middlewares/authenticate.middleware");
+const {upload} = require("../../middlewares/upload.middleware");
 
-router.use(protect);
+//===========User Api =======================
 
-router.get('/me', getMe);
-router.patch('/me', updateMe);
-router.get('/me/addresses', getAddresses);
-router.post('/me/addresses', async (req, res) => { // Adding missing POST address
-  const User = require('../../models/user.model');
-  const user = await User.findById(req.user._id);
-  user.address.push(req.body);
-  await user.save();
-  res.status(201).json({ data: { addresses: user.address } });
-});
-router.patch('/me/addresses/default', setDefaultAddress);
-router.delete('/me/addresses/:id', deleteAddress);
+// get own profile
+userRouter.get("/me", authMiddleware, userController.getOwnProfileController);
 
-router.use(authorize('admin'));
-router.get('/', getAllUsers);
-router.patch('/:id', toggleActive);
-router.delete('/:id', deleteUser);
+//update own profile
+userRouter.patch(
+  "/me",
+  authMiddleware,
+  upload.single("profilePicture"),
+  userController.updateOwnProfileController
+);
 
-module.exports = router;
+//get all address
+userRouter.get(
+  "/me/addresses",
+  authMiddleware,
+  userController.getAllAddressesController
+);
+
+//create addresses
+userRouter.post(
+  "/me/addresses",
+  authMiddleware,
+  userController.createAddressesController
+);
+
+//update address
+userRouter.patch(
+  "/me/addresses/:addrId",
+  authMiddleware,
+  userController.updateAddressesController
+);
+
+//delete address
+userRouter.delete(
+  "/me/addresses/:addrId",
+  authMiddleware,
+  userController.deleteAddressesController
+);
+
+//======Admin api ===============
+
+//update user status
+userRouter.patch(
+  "/:id/status",
+  authMiddleware,
+  userController.updateUserStatusController
+);
+
+//delete user
+userRouter.delete(
+    "/:id", 
+    authMiddleware,
+    userController.deleteUserController
+);
+//get all users
+userRouter.get(
+    "/",
+     authMiddleware, 
+     userController.getAllUserController
+    );
+
+module.exports = userRouter;

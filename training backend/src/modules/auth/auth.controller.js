@@ -1,63 +1,142 @@
-
 const asyncHandler = require("../../utils/asyncHandler");
-const ApiResponse = require("../../utils/apiResponse");
-const ApiError = require("../../utils/apiError");
-const User = require("../../models/user.model");
-const { signAccessToken, signRefreshToken } = require("../../utils/jwt");
-const jwt = require('jsonwebtoken');
+const authService = require("./auth.service");
+const apiResponse = require("../../utils/apiResponse");
 
-exports.register = asyncHandler(async (req, res) => {
+const jwt = require("jsonwebtoken");
+const apiError = require("../../utils/apiError");
+
+const {
+  refreshCookieOptions,
+  accessCookieOptions,
+  signAccessToken, signRefreshToken,verifyRefreshToken,
+} = require("../../utils/token");
+
+const RefreshModel = require("../../models/refreshToken.model");
+
+const generateToken = (res, data) => {
+  const accessToken = signAccessToken(data);
+  const refreshToken = signRefreshToken(data);
+
+  res.cookie("refreshTokens", refreshToken, refreshCookieOptions);
+  res.cookie("accessTokens", accessToken, accessCookieOptions);
+  return { accessToken: accessToken, refreshToken: refreshToken };
+};
+
+// register controller
+const registerController = asyncHandler(async (req, res) => {
   const { name, email, password, role } = req.body;
-  const user = await User.create({ email, email1: email, password, role });
-  res.status(201).json(ApiResponse(201, user, "User registered successfully"));
+  const userData = await authService.registerService({
+    name,
+    email,
+    password,
+    role,
+  });
+
+  const tokens = generateToken(res, userData.user);
+
+  await authService.createRefreshService({
+    userId: userData.user._id,
+    token: tokens.refreshToken,
+  });
+
+  res.status(201).json(
+    apiResponse(
+      201,
+      {
+        user: userData.user,
+        tokens,
+      },
+      "User created successfully!",
+    ),
+  );
 });
 
-exports.login = asyncHandler(async (req, res) => {
+//login controller
+const loginController = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
-  const user = await User.findOne({ email1: email }).select("+password");
-  if (!user) throw new ApiError(404, "User not found");
+  console.log("req.body :", req.body);
+  const result = await authService.loginService({ email, password });
 
-  const isMatch = await user.isPasswordCorrectPlain(password);
-  if (!isMatch) throw new ApiError(401, "Invalid credentials");
+  const tokens = generateToken(res, result.user);
 
-  const accessToken = signAccessToken(user);
-  const refreshToken = signRefreshToken(user);
+  await authService.createRefreshService({
+    userId: result.user._id,
+    token: tokens.refreshToken,
+  });
 
-  res.cookie("refreshToken", refreshToken, { httpOnly: true, secure: true });
-  res.status(200).json(ApiResponse(200, { accessToken, user }, "Login successful"));
+  res
+    .status(200)
+    .json(
+      apiResponse(200, { user: result.user, tokens }, "login successfully!!"),
+    );
 });
 
-exports.refresh = asyncHandler(async (req, res) => {
-  let token = req.cookies.refreshToken;
-  if (!token && req.headers['cookie']) {
-      const match = req.headers['cookie'].match(/refreshToken=([^;]+)/);
-      if (match) token = match[1];
+//refresh cpntroller
+const refreshController = asyncHandler(async (req, res) => {
+  const refreshToken = req.cookies.refreshTokens;
+
+  if (!refreshToken) {
+    throw apiError(401, "Refresh token not found!");
   }
-  if (!token) throw new ApiError(401, "No refresh token provided");
 
-  const payload = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET || 'technorefresh');
-  const user = await User.findById(payload.sub);
-  if (!user) throw new ApiError(404, "User not found");
+  const decoded = verifyRefreshToken(refreshToken);
 
-  const newAccessToken = signAccessToken(user);
-  res.status(200).json(ApiResponse(200, { accessToken: newAccessToken }, "Token refreshed"));
+  const user = await authService.getUserById(decoded.sub);
+
+  if (!user) {
+    throw apiError(404, "User not found!");
+  }
+
+  const tokens = generateToken(res, user);
+
+  await authService.createRefreshService({
+    userId: user._id,
+    token: tokens.refreshToken,
+  });
+
+  res
+    .status(200)
+    .json(
+      apiResponse(
+        200,
+        null,
+        "Token refreshed successfully!"
+      )
+    );
 });
 
-exports.logout = asyncHandler(async (req, res) => {
-  res.clearCookie("refreshToken");
-  res.status(200).json(ApiResponse(200, null, "Logged out successfully"));
+//logout controller
+const logoutController = asyncHandler(async (req, res) => {
+  // 1. Get refresh token from cookie
+  const refreshToken = req.cookies.refreshTokens;
+
+  // 2. Delete refresh token from DB
+  if (refreshToken) {
+    await authService.logoutService(refreshToken);
+  }
+
+  // 3. Clear cookies
+  res.clearCookie("refreshTokens", refreshCookieOptions);
+  res.clearCookie("accessTokens", accessCookieOptions);
+
+  res.status(200).json(apiResponse(200, null, "Logout successfully!"));
 });
 
-exports.context = asyncHandler(async (req, res) => {
-  res.status(200).json(ApiResponse(200, req.user, "Context hydrated"));
+
+
+//change password controller
+const changePasswordController = asyncHandler(async (req, res) => {
+   const {oldPassword,newPassword}= req.body;
+  await authService.changePasswordService({userID: req.user.sub, newPassword:newPassword,oldPassword:oldPassword});
+
+  res.status(200).json(apiResponse(200,null,"password changed successfully!"))
 });
 
-exports.changePassword = asyncHandler(async (req, res) => {
-  const { oldPassword, newPassword } = req.body;
-  const user = await User.findById(req.user._id).select("+password");
-  const isMatch = await user.isPasswordCorrectPlain(oldPassword);
-  if (!isMatch) throw new ApiError(401, "Invalid old password");
-  user.password = newPassword;
-  await user.save();
-  res.status(200).json(ApiResponse(200, null, "Password changed successfully"));
-});
+const authController = {
+  registerController,
+  loginController,
+  logoutController,
+  changePasswordController,
+  refreshController,
+};
+module.exports = { authController };

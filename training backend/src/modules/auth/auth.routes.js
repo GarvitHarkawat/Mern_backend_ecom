@@ -1,15 +1,55 @@
 
-const express = require('express');
-const { register, login, refresh, logout, context, changePassword } = require('./auth.controller');
-const { protect } = require('../../middlewares/auth.middleware');
+const express = require("express");
 
-const router = express.Router();
+const authRouter = express.Router();
 
-router.post('/register', register);
-router.post('/login', login);
-router.post('/refresh', refresh);
-router.post('/logout', logout);
-router.get('/context', protect, context);
-router.patch('/change-password', protect, changePassword);
+const { authController } = require("./auth.controller");
 
-module.exports = router;
+const validate = require("../../middlewares/validate.middleware");
+
+
+
+const {
+  registerSchema,
+  loginSchema,
+  changePasswordSchema,
+} = require("./auth.validator");
+
+const authMiddleware = require("../../middlewares/authenticate.middleware");
+
+// Register
+authRouter.post(
+  "/register",
+  validate(registerSchema),
+  authController.registerController
+);
+
+// Login
+authRouter.post(
+  "/login",
+  validate(loginSchema),
+  authController.loginController
+);
+
+// Refresh
+authRouter.post(
+  "/refresh",
+  authController.refreshController
+);
+
+// Logout
+authRouter.post(
+  "/logout",
+  authController.logoutController
+);
+
+
+// Change Password
+authRouter.post(
+  "/changePassword",
+  authMiddleware,
+  validate(changePasswordSchema),
+  authController.changePasswordController
+);
+
+module.exports = authRouter; 
