@@ -1,7 +1,7 @@
 
 const UserModel = require("../../models/auth.model");
 const apiError = require("../../utils/apiError");
-const { uploadToCloudinary } = require("../../utils/upploadToCloudinary");
+const { uploadToCloudinary } = require("../../utils/uploadToCloudinary");
 const cloudinary = require("../../config/Cloudinary");
 
 
@@ -29,7 +29,7 @@ const updateProfileService = async (id, data, image) => {
     updateData.profilePhoto = uploadedImage;
   }
 
-  const result = await userModel.findOneAndUpdate(
+  const result = await UserModel.findOneAndUpdate(
     { _id: id },
     { $set: updateData },
     { returnDocument: "after" },
@@ -66,7 +66,7 @@ const createAddressesService = async (id, data) => {
   }
 
   user.addressess.push(newAddress);
-  (await user).save();
+  await user.save();
   return user;
 };
 

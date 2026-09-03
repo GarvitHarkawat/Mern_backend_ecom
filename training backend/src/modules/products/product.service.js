@@ -4,7 +4,7 @@ const CategoryModel = require("../../models/category.model");
 const ProductModel = require("../../models/product.model");
 const { CONFLICT, NOT_FOUND, BAD_REQUEST } = require("../../utils/httpStatus");
 const { convertToSlug } = require("../../utils/slug");
-const { uploadToCloudinary, destroyFromCloudinary } = require("../../utils/upploadToCloudinary");
+const { uploadToCloudinary, destroyFromCloudinary } = require("../../utils/uploadToCloudinary");
 
 // ============ search products ============
 const search = async (query) => {

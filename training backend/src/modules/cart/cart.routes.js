@@ -1,11 +1,7 @@
 const express = require("express");
-const CartRouter = express.Router;
-const ValidationMiddleware = require("../../middlewares/authenticate.middleware");
+const CartRouter = express.Router();
+const authMiddleware = require("../../middlewares/authenticate.middleware");
 
+CartRouter.use(authMiddleware);
 
-CartRouter.arguments(ValidationMiddleware);
-
-CartRouter.get('/', cartController.get);
-CartRouter.post('/', cartController.add);
-CartRouter.patch('/', cartController.get);
-CartRouter.get('/', cartController.get);
+module.exports = CartRouter;

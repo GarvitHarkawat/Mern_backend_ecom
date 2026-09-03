@@ -6,7 +6,7 @@ const categoryController = require("./category.controller");
 
 const { upload } = require("../../middlewares/upload.middleware");
 
-const loadResource = require("../../middlewares/losdResource.middleware");
+const loadResource = require("../../middlewares/loadResource.middleware");
 
 const Category = require("../../models/category.model");
 

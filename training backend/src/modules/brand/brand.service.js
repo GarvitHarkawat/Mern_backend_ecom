@@ -4,7 +4,7 @@ const convertToSlug = require("../../utils/slug");
 const {
   uploadToCloudinary,
   destroyFromCloudinary,
-} = require("../../utils/upploadToCloudinary");
+} = require("../../utils/uploadToCloudinary");
 
 // Get all active brands
 const getAllBrandsService = async () => {

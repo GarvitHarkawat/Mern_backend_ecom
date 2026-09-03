@@ -4,8 +4,8 @@ const cors = require("cors");
 require("dotenv").config();
 const cookieParser = require("cookie-parser");
 
-const authRouter = require("./modules/auth/auth.router");
-const userRouter = require("./modules/users/user.routes");
+const authRouter = require("./modules/auth/auth.routes");
+const userRouter = require("./modules/user/user.routes");
 const categoryRouter = require("./modules/category/category.routes");
 const BrandRouter = require("./modules/brand/brand.routes");
 const ProductRouter = require("./modules/products/product.route");
@@ -33,14 +33,6 @@ app.use(
   })
 );
 
-
-app.use("/api/v1/brand", BrandRouter);
-app.use("/api/v1/category", categoryRouter);
-app.use("/api/v1/auth", authRouter);
-app.use("/api/v1/user", userRouter);
-app.use("/api/v1/product", ProductRouter);
-app.use(notFound);
-app.use(errorHandler);
 app.get('/api/v1/health', (req, res) =>
   res.status(200).json(
     apiResponse
@@ -53,6 +45,14 @@ app.get('/api/v1/health', (req, res) =>
         },
         'API is running'
       )));
+
+app.use("/api/v1/brand", BrandRouter);
+app.use("/api/v1/category", categoryRouter);
+app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/user", userRouter);
+app.use("/api/v1/product", ProductRouter);
+app.use(notFound);
+app.use(errorHandler);
 
 
 

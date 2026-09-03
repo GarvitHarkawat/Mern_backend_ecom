@@ -6,7 +6,7 @@ const BrandController = require("./brand.controller");
 
 const { upload } = require("../../middlewares/upload.middleware");
 
-const loadResource = require("../../middlewares/losdResource.middleware");
+const loadResource = require("../../middlewares/loadResource.middleware");
 
 const BrandModel = require("../../models/brand.model");
 const validate = require("../../middlewares/validate.middleware");

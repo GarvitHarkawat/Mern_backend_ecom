@@ -3,7 +3,7 @@ const ProductRouter = express.Router();
 const ProductController = require("./product.controller");
 const { uploadMedia } = require("../../middlewares/upload.middleware");
 const authenticate = require("../../middlewares/authenticate.middleware");
-const loadResource = require("../../middlewares/losdResource.middleware");
+const loadResource = require("../../middlewares/loadResource.middleware");
 const ProductModel = require("../../models/product.model");
 const validate = require("../../middlewares/validate.middleware"); // ye actual validate function hai
 const {
