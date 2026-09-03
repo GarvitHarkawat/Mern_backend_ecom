@@ -6,9 +6,10 @@ const categoryController = require("./category.controller");
 
 const { upload } = require("../../middlewares/upload.middleware");
 
-const loadResource = require("../../middlewares/loadResource.middleware");
+const loadResource = require("../../middlewares/losdResource.middleware");
 
 const Category = require("../../models/category.model");
+
 
 const {
   createCategoryValidator,
@@ -23,16 +24,16 @@ categoryRouter.get("/tree", categoryController.getAllTreeCategoryController);
 // Create root category
 categoryRouter.post(
   "/",
-  upload.single("image"),
   validate(createCategoryValidator),
+  upload.single("image"),
   categoryController.createCategoryController,
 );
 
 // Create child category
 categoryRouter.post(
   "/:id",
-  upload.single("image"),
   validate(createCategoryValidator),
+  upload.single("image"),
   categoryController.createCategoryController,
 );
 
@@ -40,8 +41,8 @@ categoryRouter.post(
 categoryRouter.patch(
   "/:id",
   loadResource(Category),
-  upload.single("image"),
   validate(updateCategoryValidator),
+  upload.single("image"),
   categoryController.updateCategoryController,
 );
 

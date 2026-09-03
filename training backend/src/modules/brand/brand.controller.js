@@ -8,31 +8,14 @@ const getBrandsController = asyncHandler(async (req, res) => {
 
   res
     .status(200)
-    .json(
-      apiResponse(
-        200,
-        result,
-        "All brands data fetched successfully"
-      )
-    );
+    .json(apiResponse(200, result, "All brands data fetched successfully"));
 });
 
 // Create brand
 const createBrandController = asyncHandler(async (req, res) => {
-  const result = await BrandService.createBrandService(
-    req.body,
-    req.file
-  );
+  const result = await BrandService.createBrandService(req.body, req.file);
 
-  res
-    .status(201)
-    .json(
-      apiResponse(
-        201,
-        result,
-        "Brand created successfully"
-      )
-    );
+  res.status(201).json(apiResponse(201, result, "Brand created successfully"));
 });
 
 // Update brand
@@ -40,35 +23,17 @@ const updateBrandController = asyncHandler(async (req, res) => {
   const result = await BrandService.updateBrandService(
     req.resource,
     req.body,
-    req.file
+    req.file,
   );
 
-  res
-    .status(200)
-    .json(
-      apiResponse(
-        200,
-        result,
-        "Brand updated successfully"
-      )
-    );
+  res.status(200).json(apiResponse(200, result, "Brand updated successfully"));
 });
 
 // Delete brand
 const deleteBrandController = asyncHandler(async (req, res) => {
-  const result = await BrandService.deleteBrandService(
-    req.resource
-  );
+  const result = await BrandService.deleteBrandService(req.resource);
 
-  res
-    .status(200)
-    .json(
-      apiResponse(
-        200,
-        result,
-        "Brand deleted successfully"
-      )
-    );
+  res.status(200).json(apiResponse(200, result, "Brand deleted successfully"));
 });
 
 module.exports = {

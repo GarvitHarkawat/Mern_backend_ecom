@@ -1,7 +1,11 @@
+
 const UserModel = require("../../models/auth.model");
 const apiError = require("../../utils/apiError");
-const { uploadToCloudinary } = require("../../utils/uploadToCloudinary");
+const { uploadToCloudinary } = require("../../utils/upploadToCloudinary");
 const cloudinary = require("../../config/Cloudinary");
+
+
+
 
 const getOwnProfileService = async (userID) => {
   const user = await UserModel.findById(userID);
@@ -25,7 +29,7 @@ const updateProfileService = async (id, data, image) => {
     updateData.profilePhoto = uploadedImage;
   }
 
-  const result = await UserModel.findOneAndUpdate(
+  const result = await userModel.findOneAndUpdate(
     { _id: id },
     { $set: updateData },
     { returnDocument: "after" },
@@ -35,24 +39,20 @@ const updateProfileService = async (id, data, image) => {
 };
 
 const getAllAddressesService = async (id) => {
-  const user = await UserModel.findById(id);
+  const user = await UserModel.findById({ _id: id });
   if (!user) {
     throw apiError(404, "user not found");
   }
-  const addresses = user.addressess || [];
-  if (addresses.length <= 0) {
-    throw apiError(404, "you don't have any address please create one !");
+  if (user.addressess.length <= 0) {
+    throw apiError(404, "you don't have any adress please create one !");
   }
-  return addresses;
+  return user.addressess;
 };
 
 const createAddressesService = async (id, data) => {
   const user = await getOwnProfileService(id);
-  if (!user.addressess) {
-    user.addressess = [];
-  }
   if (user.addressess.length >= 5) {
-    throw apiError(429, "max addresses limit reached, can't create more");
+    throw apiError(429, "max adresses limit reached, can't create more");
   }
 
   const newAddress = user.addressess.create(data);
@@ -66,29 +66,29 @@ const createAddressesService = async (id, data) => {
   }
 
   user.addressess.push(newAddress);
-  await user.save();
+  (await user).save();
   return user;
 };
 
 const deleteAddressService = async (userID, addressID) => {
   const user = await getOwnProfileService(userID);
-  const address = user.addressess?.id(addressID);
+  const address = user.addressess.id(addressID);
 
   if (!address) throw apiError(404, "address not found");
 
   const wasDefault = address.isDefault;
   address.deleteOne();
 
-  if (user.addressess.length > 0 && wasDefault === true) {
+  if (user.addressess.length > 0 && wasDefault === true)
     user.addressess[0].isDefault = true;
-  }
   await user.save();
 };
 
 const updateAddressService = async (userID, addressID, patch) => {
   const user = await getOwnProfileService(userID);
 
-  const address = user.addressess?.id(addressID);
+  const address = user.addressess.id(addressID);
+
 
   if (!address) {
     throw apiError(404, "Address not found");
@@ -116,4 +116,5 @@ module.exports = {
   createAddressesService,
   deleteAddressService,
   updateAddressService,
+
 };

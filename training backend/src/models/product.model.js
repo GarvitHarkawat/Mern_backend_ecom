@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 
 const slugify = require("slugify");
 
-const {nanoid} = require("nanoid");
+const { nanoid } = require("nanoid");
 
 
 const productSchema = new mongoose.Schema(
@@ -131,18 +131,18 @@ productSchema.virtual("inStock").get(function () {
 });
 
 
-productSchema.pre("validate", function () {
-    this.slug =
-        `${slugify(this.title, {
-            lower: true,
-            strict: true
-        })}-${nanoid(6)}`;
+productSchema.pre("validate", function (next) {
+    if (this.isNew || this.isModified("title")) {
+        this.slug = `${slugify(this.title, { lower: true, strict: true })}-${nanoid(6)}`;
+    }
 
     if (this.price > this.mrp) {
-        throw new Error("Price cannot exceed MRP");
+        return next(new Error("Price cannot exceed MRP"));
     }
+
+    next();
 });
 
 
 const Product = mongoose.model("Product", productSchema);
-module.exports =  Product;
+module.exports = Product;

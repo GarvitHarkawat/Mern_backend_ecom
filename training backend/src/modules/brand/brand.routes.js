@@ -6,9 +6,16 @@ const BrandController = require("./brand.controller");
 
 const { upload } = require("../../middlewares/upload.middleware");
 
-const loadResource = require("../../middlewares/loadResource.middleware");
+const loadResource = require("../../middlewares/losdResource.middleware");
 
 const BrandModel = require("../../models/brand.model");
+const validate = require("../../middlewares/validate.middleware");
+const {
+  createBrandValidator,
+  updateBrandValidator,
+} = require("./brand.validator");
+
+
 
 // Get all brands - Public
 BrandRouter.get("/", BrandController.getBrandsController);
@@ -16,6 +23,7 @@ BrandRouter.get("/", BrandController.getBrandsController);
 // Create brand
 BrandRouter.post(
   "/",
+  validate(createBrandValidator),
   upload.single("logo"),
   BrandController.createBrandController,
 );
@@ -24,6 +32,7 @@ BrandRouter.post(
 BrandRouter.patch(
   "/:id",
   loadResource(BrandModel),
+  validate(updateBrandValidator),
   upload.single("logo"),
   BrandController.updateBrandController,
 );

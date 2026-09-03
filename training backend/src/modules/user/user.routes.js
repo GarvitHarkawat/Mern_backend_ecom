@@ -4,7 +4,13 @@ const userRouter = express.Router();
 
 const userController = require("./user.controller");
 const authMiddleware = require("../../middlewares/authenticate.middleware");
-const {upload} = require("../../middlewares/upload.middleware");
+const { upload } = require("../../middlewares/upload.middleware");
+const validate = require("../../middlewares/validate.middleware");
+const {
+  updateProfileValidator,
+  createAddressValidator,
+  updateAddressValidator,
+} = require("./user.validator")
 
 //===========User Api =======================
 
@@ -16,6 +22,7 @@ userRouter.patch(
   "/me",
   authMiddleware,
   upload.single("profilePicture"),
+  validate(updateProfileValidator),
   userController.updateOwnProfileController
 );
 
@@ -30,6 +37,7 @@ userRouter.get(
 userRouter.post(
   "/me/addresses",
   authMiddleware,
+  validate(createAddressValidator),
   userController.createAddressesController
 );
 
@@ -37,6 +45,7 @@ userRouter.post(
 userRouter.patch(
   "/me/addresses/:addrId",
   authMiddleware,
+  validate(updateAddressValidator),
   userController.updateAddressesController
 );
 
@@ -58,15 +67,15 @@ userRouter.patch(
 
 //delete user
 userRouter.delete(
-    "/:id", 
-    authMiddleware,
-    userController.deleteUserController
+  "/:id",
+  authMiddleware,
+  userController.deleteUserController
 );
 //get all users
 userRouter.get(
-    "/",
-     authMiddleware, 
-     userController.getAllUserController
-    );
+  "/",
+  authMiddleware,
+  userController.getAllUserController
+);
 
 module.exports = userRouter;
